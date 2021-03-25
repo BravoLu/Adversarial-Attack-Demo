@@ -19,5 +19,5 @@ python deploy.sh
 
 ## Some results
 
-![pic](image/results/web_adversarial_attack.jpg)
-![pic](image/results/web_adversarial_attack_2.jpg)
+![pic](images/results/web_adversarial_attack.jpg)
+![pic](images/results/web_adversarial_attack_2.jpg)
