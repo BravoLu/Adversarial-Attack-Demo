@@ -14,8 +14,9 @@ python deploy.sh
 ```
 
 2. Use browser and input corresponding ip:port.
+3. Upload original images then click "upload". (We provide some original examples)
 
-3. Upload original images and adversarial images, respectively then click "upload". (We provide some original examples and adversarial examples in directory ./images)
+* The demo is based on resnet18.
 
 ## Some results
 
