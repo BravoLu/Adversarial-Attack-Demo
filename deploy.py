@@ -8,8 +8,13 @@ import torch.nn.functional as F
 from torchvision.utils import save_image
 
 
-from resnet import ResNet18
-from generator import SSAE 
+from resnet import resnet
+from efficientnet import efficientnet
+from mobilenet import mobilenet
+from googlenet import googlenet 
+from densenet import densenet
+
+from generator import SSAE
 import uuid
 from flask import Flask, render_template, request, flash, redirect, session
 
@@ -53,7 +58,7 @@ def attack(img_name, load_folder, model_path):
     weight = torch.load(model_path, map_location=torch.device('cpu'))
     model = SSAE()
     model.load_state_dict(weight)
-    model.eval() 
+    model.eval()
 
     load_path = os.path.join(load_folder, img_name)
     image = cv2.imread(load_path)
@@ -72,9 +77,9 @@ def attack(img_name, load_folder, model_path):
     return "%s_adv.png"%img_name
 
 
-def classifier(img_name, load_folder, model_path):
-    weight = torch.load(model_path, map_location=torch.device('cpu'))
-    model = ResNet18()
+def classifier(img_name, load_folder, model_path, model_name):
+    weight = torch.load(model_path, map_location=torch.device('cpu'), encoding="latin1")
+    model = globals()[model_name]()
     model.load_state_dict(weight)
     model.eval()
 
@@ -92,8 +97,8 @@ def classifier(img_name, load_folder, model_path):
     return possibility.detach().numpy().tolist(), label
 
 # create folder for Uploading and cartoonizing images
-model_path = "saved_models/resnet18.pth"
-attacker_path = "saved_models/attacker.pth"
+
+PATH = "saved_models/"
 UPLOAD_FOLDER = "static/upload/"
 ALLOWED_EXTENSIONS = set(["png", "jpg", "jpeg"])
 
@@ -124,8 +129,12 @@ def upload():
             # image_location = os.path.join(UPLOAD_FOLDER, raw_img_name)
 
             # pass hashed values
+            
+            tmp = request.values.get("model")
+            attacker_path = os.path.join(PATH, tmp+"_attacker.pth")
             adv_img_name = attack(raw_img_name, UPLOAD_FOLDER, attacker_path)
-            raw_pos, raw_label = classifier(raw_img_name, UPLOAD_FOLDER, model_path)
+            model_path = os.path.join(PATH, tmp+".pth")
+            raw_pos, raw_label = classifier(raw_img_name, UPLOAD_FOLDER, model_path, tmp)
             raw_pos = [float('{:.2f}'.format(i)) for i in raw_pos[0]]
         else:
             flash("Allowed image types are -> png, jpg, jpeg, gif")
@@ -133,7 +142,7 @@ def upload():
 
         print(os.path.exists(os.path.join(UPLOAD_FOLDER, adv_img_name)))
         if os.path.exists(os.path.join(UPLOAD_FOLDER, adv_img_name)):
-            adv_pos, adv_label = classifier(adv_img_name, UPLOAD_FOLDER, model_path)
+            adv_pos, adv_label = classifier(adv_img_name, UPLOAD_FOLDER, model_path, tmp)
             print(adv_pos[0])
             adv_pos = [float('{:.2f}'.format(i)) for i in adv_pos[0]]
         else:
@@ -148,4 +157,4 @@ def hello(name):
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port="9999", debug=True)
+    app.run(host='0.0.0.0', port="9988", debug=True)

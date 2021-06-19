@@ -96,7 +96,7 @@ class ResNet(nn.Module):
         return out
 
 
-def ResNet18():
+def resnet():
     return ResNet(BasicBlock, [2, 2, 2, 2])
 
 

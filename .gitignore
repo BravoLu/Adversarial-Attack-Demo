@@ -148,3 +148,4 @@ dmypy.json
 nohup.out
 __pycache__
 
+saved_models/*
